@@ -1,0 +1,55 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Sum
+#pragma kernel SDSum
+#pragma kernel AverageSum
+#pragma kernel AverageSDSum
+#define THREAD_COUNT 1
+#define THREAD_X 16
+#define THREAD_Y 16
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+Texture2D<float4> Source;
+//SamplerState sampler_LinearClamp;
+RWStructuredBuffer<int> StatisticsBuffer;
+int Num;
+[numthreads(1,1,1)] 
+void Sum (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    //float4 mColor = Source.SampleLevel(sampler_LinearClamp,float2(id.x/(float)THREAD_COUNT,id.y/(float)THREAD_COUNT),0);
+    float4 mColor = Source[id.xy];
+    InterlockedAdd(StatisticsBuffer[0], int(mColor.x));
+    InterlockedAdd(StatisticsBuffer[2], int(mColor.y));
+    InterlockedAdd(StatisticsBuffer[4], int(mColor.z));
+}
+
+[numthreads(1,1,1)] 
+void SDSum (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    //float4 mColor = Source.SampleLevel(sampler_LinearClamp,float2(id.x/(float)THREAD_COUNT,id.y/(float)THREAD_COUNT),0);
+    float4 mColor = Source[id.xy];
+    InterlockedAdd(StatisticsBuffer[1],int(pow(mColor.x-StatisticsBuffer[0],2)));
+    InterlockedAdd(StatisticsBuffer[3],int(pow(mColor.y-StatisticsBuffer[2],2)));
+    InterlockedAdd(StatisticsBuffer[5],int(pow(mColor.z-StatisticsBuffer[4],2)));
+}
+
+
+[numthreads(1,1,1)] 
+void AverageSum (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    StatisticsBuffer[0] /= Num;
+    StatisticsBuffer[2] /= Num;
+    StatisticsBuffer[4] /= Num;
+}
+
+[numthreads(1,1,1)] 
+void AverageSDSum (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    StatisticsBuffer[1] = sqrt(StatisticsBuffer[1]/Num);
+    StatisticsBuffer[3] = sqrt(StatisticsBuffer[3]/Num);
+    StatisticsBuffer[5] = sqrt(StatisticsBuffer[5]/Num);
+}

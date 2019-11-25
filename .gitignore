@@ -34,3 +34,16 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+3DGamekit/
+Gizmos/
+Polybrush Data/
+Scenes/
+Textures/
+3DGamekit.meta
+3DGameKit_Third-PartyNotice.txt
+3DGameKit_Third-PartyNotice.txt.meta
+Gizmos.meta
+Polybrush Data.meta
+Scenes.meta
+Textures.meta

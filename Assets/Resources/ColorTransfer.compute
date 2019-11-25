@@ -1,0 +1,36 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel ColorTransfer
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+Texture2D<float4> Source;
+RWStructuredBuffer<int> SrcStatisticsBuffer;
+RWStructuredBuffer<int> TarStatisticsBuffer;
+
+[numthreads(1,1,1)]
+void ColorTransfer (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    float3 src = Source[id.xy].xyz;
+    float tl,ta,tb;
+    if(SrcStatisticsBuffer[1] == 0){
+        tl = src.x;
+    }
+    else{
+        tl = (src.x-SrcStatisticsBuffer[0])*TarStatisticsBuffer[1]/SrcStatisticsBuffer[1] + TarStatisticsBuffer[0];
+    }
+    if(SrcStatisticsBuffer[3] == 0){
+        ta = src.y;
+    }
+    else{
+        ta = (src.y-SrcStatisticsBuffer[2])*TarStatisticsBuffer[3]/SrcStatisticsBuffer[3] + TarStatisticsBuffer[2];
+    }
+    if(SrcStatisticsBuffer[5] == 0){
+        tb = src.z;
+    }
+    else{
+        tb = (src.z-SrcStatisticsBuffer[4])*TarStatisticsBuffer[5]/SrcStatisticsBuffer[5] + TarStatisticsBuffer[4];
+    }
+    Result[id.xy] = float4(tl,ta,tb,1);
+}

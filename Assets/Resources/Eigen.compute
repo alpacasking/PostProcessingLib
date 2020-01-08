@@ -1,0 +1,18 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Eigen
+#include "Utility.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+Texture2D<float4> Source;
+
+
+[numthreads(1,1,1)]
+void Eigen (uint3 id : SV_DispatchThreadID)
+{
+	float2 majorEigenvector,minorEigenvector;
+	float majorEigenValue,minorEigenValue;
+	StructureTensorToEigen(Source[id.xy].xyz,majorEigenvector,minorEigenvector,majorEigenValue,minorEigenValue);
+	float integrationScale = (majorEigenValue - minorEigenValue) /(majorEigenValue + minorEigenValue);
+	Result[id.xy] = float4(normalize(minorEigenvector),minorEigenValue,integrationScale);
+}

@@ -1,0 +1,44 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel StructureTensor
+#pragma kernel JacobiRelaxation
+#include "Utility.hlsl"
+Texture2D<float4> Source;
+RWTexture2D<float4> Result;
+float p;
+int width;
+int height;
+
+[numthreads(1,1,1)]
+void StructureTensor(uint3 id : SV_DispatchThreadID)
+{
+	uint2 bound = uint2(width,height);
+    // rotational symmetric derivative filter
+    float s_1_1 = Source[BoundIndex(id.xy + int2( -1, -1),bound)].r;
+    float s0_1 = Source[BoundIndex(id.xy + int2( 0, -1),bound)].r;
+    float s1_1 = Source[BoundIndex(id.xy + int2( 1, -1),bound)].r;
+    float s_10 = Source[BoundIndex(id.xy + int2(-1, 0),bound)].r;
+    float s10 = Source[BoundIndex(id.xy + int2( 1, 0),bound)].r;
+    float s_11 = Source[BoundIndex(id.xy + int2(-1, 1),bound)].r;
+    float s01 = Source[BoundIndex(id.xy + int2( 0, 1),bound)].r;
+    float s11 = Source[BoundIndex(id.xy + int2( 1, 1),bound)].r;
+    
+    float dx = (p*s_11-p*s11+(1-2*p)*s_10+(2*p-1)*s10+p*s_1_1-p*s1_1)*0.5;
+    float dy = -(p*s_11-p*s_1_1+(1-2*p)*s01+(2*p-1)*s0_1+p*s11-p*s1_1)*0.5;
+	// eigen
+    float4 tensor = float4(dx*dx,dx*dy,dy*dy,0);
+	
+	Result[id.xy]  = tensor;
+}
+
+[numthreads(1,1,1)]
+void JacobiRelaxation(uint3 id : SV_DispatchThreadID)
+{
+	uint2 bound = uint2(width,height);
+	float3 tensor = Source[id.xy].xyz;
+	float s = tensor.x*tensor.x + tensor.y*tensor.y*2 + tensor.z*tensor.z;
+	if(s > p ) return;
+	Result[id.xy] = (Source[BoundIndex(id.xy + int2(1,0),bound)] 
+	+ Source[BoundIndex(id.xy + int2(-1,0),bound)] 
+	+Source[BoundIndex(id.xy + int2(0,1),bound)] 
+	+Source[BoundIndex(id.xy + int2(0,-1),bound)])*0.25;
+}

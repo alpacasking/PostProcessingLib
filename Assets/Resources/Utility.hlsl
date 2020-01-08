@@ -39,3 +39,24 @@ float3 AKLabToRgb (float3 lab,float strength)
 
     return float3(R,G,B);
 }
+
+float RgbToGrayScale (float3 rgb)
+{
+	float grayScale = rgb.r*0.299 + rgb.g*0.587 + rgb.b*0.114;
+	return grayScale;
+}
+
+// return eigenvectors and eigenvalues
+void StructureTensorToEigen(float3 structureTensor,out float2 majorEigenvector,out float2 minorEigenvector,out float majorEigenValue,out float minorEigenValue )
+{
+	float t1 = structureTensor.x + structureTensor.z;
+	float t2 = sqrt(pow(structureTensor.x -  structureTensor.z,2)+4*pow(structureTensor.y,2));
+	majorEigenValue = (t1 + t2)/2;
+	minorEigenValue = (t1 - t2)/2;
+	majorEigenvector = float2(structureTensor.y,majorEigenValue-structureTensor.x);
+	minorEigenvector = float2(majorEigenValue-structureTensor.x,-structureTensor.y);
+}
+
+uint2 BoundIndex(uint2 i,uint2 bound){
+	return uint2(clamp(i.x,0,bound.x),clamp(i.y,0,bound.y));
+}

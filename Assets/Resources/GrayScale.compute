@@ -1,0 +1,17 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel GrayScale
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+Texture2D<float4> Source;
+
+[numthreads(1,1,1)]
+void GrayScale (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+
+    float4 sourceColor = Source[id.xy];
+    float grayScale = sourceColor.r*0.299 + sourceColor.g*0.587 + sourceColor.b*0.114;
+    Result[id.xy] = float4(grayScale,grayScale,grayScale,1);
+}

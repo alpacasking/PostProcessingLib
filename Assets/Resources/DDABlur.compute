@@ -1,0 +1,34 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel DDABlur
+#include "Utility.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+Texture2D<float4> Source;
+Texture2D<float4> VectorField;
+RWTexture2D<float4> Result;
+int Length;
+float sigma;
+int width;
+int height;
+
+
+[numthreads(1,1,1)]
+void DDABlur (uint3 id : SV_DispatchThreadID)
+{
+	float2 v = VectorField[id.xy].xy;
+	float3 sum = Source[id.xy].rgb;
+	float weight = 1;
+	uint2 p,n;
+	float2 t;
+	uint2 bound = uint2(width,height);
+	for(int i=1;i<=Length;i++){
+		t = i*v;
+		p = BoundIndex(id.xy + t + float2(0.5,0.5),bound);
+		n = BoundIndex(id.xy - t + float2(0.5,0.5),bound);
+		float k = exp(-i*i*sigma);
+		sum += (Source[p].rgb + Source[n].rgb)*k;
+		weight += 2*k;
+   }
+   sum /= weight;
+   Result[id.xy] = float4(sum,1);
+}

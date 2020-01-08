@@ -10,7 +10,7 @@ int Length;
 float sigma;
 int width;
 int height;
-
+float step;
 
 [numthreads(1,1,1)]
 void DDABlur (uint3 id : SV_DispatchThreadID)
@@ -22,7 +22,7 @@ void DDABlur (uint3 id : SV_DispatchThreadID)
 	float2 t;
 	uint2 bound = uint2(width,height);
 	for(int i=1;i<=Length;i++){
-		t = i*v;
+		t = i*v*step;
 		p = BoundIndex(id.xy + t + float2(0.5,0.5),bound);
 		n = BoundIndex(id.xy - t + float2(0.5,0.5),bound);
 		float k = exp(-i*i*sigma);

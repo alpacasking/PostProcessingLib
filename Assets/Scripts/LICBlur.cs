@@ -41,6 +41,9 @@ namespace AlpacasKing
         [Range(0, 10)]
         public IntParameter ConvolutionHalfLength = new IntParameter { value = 4 };
 
+        [Range(0f, 10f)]
+        public FloatParameter ConvolutionStep = new FloatParameter { value = 1f };
+
         [Range(0.01f, 1f)]
         public FloatParameter ConvolutionSigma = new FloatParameter { value = 0.1f };
 
@@ -191,7 +194,7 @@ namespace AlpacasKing
             cmd.SetComputeFloatParam(convolutionShader, "sigma", settings.ConvolutionSigma.value);
             cmd.SetComputeIntParam(convolutionShader, "width", context.width);
             cmd.SetComputeIntParam(convolutionShader, "height", context.height);
-
+            cmd.SetComputeFloatParam(convolutionShader, "step", settings.ConvolutionStep.value);
             for (int i = 0; i < settings.ConvolutionIteration.value; i++)
             {
 

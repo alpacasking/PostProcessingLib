@@ -22,8 +22,11 @@ void StructureTensor(uint3 id : SV_DispatchThreadID)
     float s01 = Source[BoundIndex(id.xy + int2( 0, 1),bound)].r;
     float s11 = Source[BoundIndex(id.xy + int2( 1, 1),bound)].r;
     
-    float dx = (p*s_11-p*s11+(1-2*p)*s_10+(2*p-1)*s10+p*s_1_1-p*s1_1)*0.5;
-    float dy = -(p*s_11-p*s_1_1+(1-2*p)*s01+(2*p-1)*s0_1+p*s11-p*s1_1)*0.5;
+	float dx = (-1*s_11+1*s11-2*s_10+2*s10-1*s_1_1+1*s1_1);
+    float dy = -(-1*s_11+1*s_1_1-2*s01+2*s0_1-1*s11+1*s1_1);
+
+    //float dx = (p*s_11-p*s11+(1-2*p)*s_10+(2*p-1)*s10+p*s_1_1-p*s1_1)*0.5;
+    //float dy = -(p*s_11-p*s_1_1+(1-2*p)*s01+(2*p-1)*s0_1+p*s11-p*s1_1)*0.5;
 	// eigen
     float4 tensor = float4(dx*dx,dx*dy,dy*dy,0);
 	

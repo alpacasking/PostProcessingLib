@@ -13,6 +13,7 @@ void Eigen (uint3 id : SV_DispatchThreadID)
 	float2 majorEigenvector,minorEigenvector;
 	float majorEigenValue,minorEigenValue;
 	StructureTensorToEigen(Source[id.xy].xyz,majorEigenvector,minorEigenvector,majorEigenValue,minorEigenValue);
-	float integrationScale = (majorEigenValue - minorEigenValue) /(majorEigenValue + minorEigenValue);
-	Result[id.xy] = float4(normalize(minorEigenvector),minorEigenValue,integrationScale);
+	//float integrationScale = (majorEigenValue - minorEigenValue) /(majorEigenValue + minorEigenValue);
+	float edge = Source[id.xy].x + Source[id.xy].z;
+	Result[id.xy] = float4(normalize(minorEigenvector),minorEigenValue,edge);
 }

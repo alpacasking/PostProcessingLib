@@ -1,0 +1,68 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel LICEularian
+
+#include "Utility.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+Texture2D<float4> Source;
+Texture2D<float4> VectorField;
+RWTexture2D<float4> Result;
+int Length;
+float sigma;
+int width;
+int height;
+float step;
+float edgeThreshold;
+
+[numthreads(1,1,1)]
+void LICEularian (uint3 id : SV_DispatchThreadID)
+{
+	if( VectorField[id.xy].w <  edgeThreshold ){
+		Result[id.xy] = float4(1,1,1,1);
+		return;
+	}
+
+	float3 sum =  Source[id.xy].rgb;
+	float weight = 1;
+
+	float k;
+	float2 v = VectorField[id.xy].xy;
+	float2 pt = float2(id.x+0.5,id.y+0.5) + v*step;
+
+	float2 v2;
+	uint2 p;
+	uint2 bound = uint2(width,height);
+	for(int i=1;i<Length ;i++){
+		p = BoundIndex(pt,bound);
+		k = exp(-i*i*sigma);
+		sum += Source[p].rgb*k;
+		weight += k;
+
+		v2 = VectorField[p].xy;
+		if( v2.x ==0 && v2.y ==0 ){
+			break;
+		}
+		v = sign(dot(v,v2)) * v2;
+		pt += v*step;
+   }
+
+
+	v = -VectorField[id.xy].xy;
+	pt = float2(id.x+0.5,id.y+0.5) +v;
+   	for(i=1;i<Length ;i++){
+		p = BoundIndex(pt,bound);
+		k = exp(-i*i*sigma);
+		sum += Source[p].rgb*k;
+		weight += k;
+
+		v2 = VectorField[p].xy;
+		if( v2.x ==0 && v2.y ==0 ){
+			break;
+		}
+		v = sign(dot(v,v2)) * v2;
+		pt += v*step;
+   }
+   sum /= weight;
+   Result[id.xy] = float4(sum*exp(-VectorField[id.xy].w),1);
+}
+
